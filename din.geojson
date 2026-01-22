@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "din",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Shape_Leng": 337.692622562 }, "geometry": { "type": "LineString", "coordinates": [ [ -77.461037243812441, 37.202736545998569 ], [ -77.460820907034119, 37.203253482350789 ], [ -77.460671708543543, 37.203681288944928 ], [ -77.460156438489832, 37.205048292457448 ] ] } }
+]
+}

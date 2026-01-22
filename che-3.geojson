@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "che-3",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "Id": 0 }, "geometry": { "type": "Point", "coordinates": [ -77.496746839424773, 37.2959843059691 ] } }
+]
+}
