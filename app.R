@@ -1,6 +1,6 @@
 if(!require(pacman)){install.packages("pacman");
   library(pacman)}
-p_load(shiny, sf, leaflet, htmlwidgets, dplyr, DT, rsconnect)
+p_load(shiny, sf, leaflet, htmlwidgets, dplyr, DT)
 
 # -----------------------------
 # 1. DATA LOADING (GeoJSON)
