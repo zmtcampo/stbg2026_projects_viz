@@ -41,7 +41,7 @@ din   <- st_read("din.geojson", quiet = TRUE)
 hw    <- st_read("hw.geojson", quiet = TRUE)
 
 # -----------------------------
-# 3. PROJECT METADATA
+# 3. PROJECT METADATA (UPDATED COST VALUES)
 # -----------------------------
 projects_tbl <- tibble(
   Projects = c("che_1","che_2","che_3","colh","din","hw"),
@@ -57,8 +57,8 @@ projects_tbl <- tibble(
   ),
   Project_Type = c("Bike/Ped","Bike/Ped","Roundabout","Bike/Ped","Roadway","Bike/Ped"),
   Funding_Category = c("Both","Both","Both","Both","STBG","CMAQ"),
-  Cost = c(1530000,2381547,10056184,1847951,4892088,17000000),
-  Request = c(1530000,2381547,4000000,1847951,4892088,NA),
+  Cost = c(3061714, 2964967, 11881982, 3446861, 4704599, 21094632),
+  Request = c(3061714, 2964967, 4000000, 3446861, 4704599, NA),
   Intent = c(
     "Construct a 5-foot sidewalk with buffer to connect with improvements planned in UPC 124340.",
     "Construct a sidewalk and pedestrian crossing, creating a safer access to Ettrick Park.",
@@ -157,21 +157,70 @@ server <- function(input, output, session){
   })
   
   output$summaryTable <- renderDT({
-    datatable(
-      projects_tbl %>%
-        mutate(
-          No. = row_number(),
-          Cost = paste0("$",formatC(Cost,format="d",big.mark=",")),
-          Request = ifelse(
-            is.na(Request),"?",
-            paste0("$",formatC(Request,format="d",big.mark=","))
-          )
-        ) %>%
-        select(No.,Locality,Project_Description,Project_Type,
-               Type=Funding_Category,Cost,Request),
-      options=list(dom="t"),
-      rownames=FALSE
+    # Prepare the main data
+    display_data <- projects_tbl %>%
+      mutate(
+        No. = as.character(row_number()),
+        Cost_num = Cost,  # Keep numeric for calculations
+        Request_num = Request,  # Keep numeric for calculations
+        Cost = paste0("$", formatC(Cost, format="d", big.mark=","), " "),
+        Request = ifelse(
+          is.na(Request), "?",
+          paste0("$", formatC(Request, format="d", big.mark=","), " ")
+        )
+      ) %>%
+      select(No., Locality, Project_Description, Project_Type,
+             Type = Funding_Category, Cost, Request, Cost_num, Request_num)
+    
+    # Calculate totals
+    total_cost <- sum(display_data$Cost_num, na.rm = TRUE)
+    total_request <- sum(display_data$Request_num, na.rm = TRUE)
+    
+    # Create totals row
+    totals_row <- data.frame(
+      No. = "Total",
+      Locality = "",
+      Project_Description = "",
+      Project_Type = "",
+      Type = "",
+      Cost = paste0("$", formatC(total_cost, format="d", big.mark=","), " "),
+      Request = paste0("$", formatC(total_request, format="d", big.mark=","), " "),
+      Cost_num = total_cost,
+      Request_num = total_request
     )
+    
+    # Combine data with totals row
+    final_data <- bind_rows(display_data, totals_row) %>%
+      select(-Cost_num, -Request_num)
+    
+    # Create the datatable
+    datatable(
+      final_data,
+      options = list(
+        dom = "t",
+        pageLength = 7,  # Show all rows including total
+        columnDefs = list(
+          list(className = "dt-center", targets = 0:6)
+        )
+      ),
+      rownames = FALSE
+    ) %>%
+      # Color the specific $4,000,000 request cell yellow
+      formatStyle(
+        "Request",
+        target = "cell",
+        backgroundColor = styleEqual(
+          c("$4,000,000 ", "?"),
+          c("yellow", "yellow")
+        )
+      ) %>%
+      # Style the total row
+      formatStyle(
+        "No.",
+        target = "row",
+        fontWeight = styleEqual("Total", "bold"),
+        backgroundColor = styleEqual("Total", "#f5f5f5")
+      )
   })
   
   output$projectMap <- renderLeaflet({
